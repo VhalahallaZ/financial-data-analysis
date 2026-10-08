@@ -5,7 +5,7 @@ import pandas_datareader.data as web
 import time
 import os
 
-def fetch_yfinance_data(tickers=["SPY", "AGG", "^VIX", "VBMFX"], start="2008-01-01", end=None):
+def fetch_yfinance_data(tickers=["SPY", "AGG", "VBMFX"], start="2008-01-01", end=None):
     """
     Fetches daily price data from Yahoo Finance.
     """

@@ -11,8 +11,8 @@ def main():
     print("STARTING CONTINUOUS ALLOCATION REGIME SWITCHING SYSTEM (V2)")
     print("=" * 60)
     
-    # 1. Load Data (from 2000)
-    df = prepare_dataset(start_date="2000-01-01")
+    # 1. Load Data (Terminating cleanly at the end of September 2026)
+    df = prepare_dataset(start_date="2000-01-01", end_date="2026-09-30")
     
     # Define features for Machine Learning model
     features_ml = [
