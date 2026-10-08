@@ -27,17 +27,29 @@ All backtests incorporate **Total-Return dividend and coupon reinvestment (`auto
 
 | Strategy Version / Model | Cumulative Return | Annualized Return | Annualized Volatility | Sharpe Ratio | Max Drawdown |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **S&P 500 Buy & Hold** | **841.25%** | **14.25%** | 14.31% | 0.996 | -23.93% |
-| **Benchmark (60/40 SPY/AGG)** | 364.87% | 9.56% | 9.18% | 1.041 | -20.06% |
-| **MRS - V1 (Binary)** | 277.14% | 8.21% | 9.04% | 0.907 | -21.12% |
-| **MRS - V2 (Continuous)** | 297.05% | 8.54% | **8.37%** | 1.019 | **-18.29%** |
-| **ML (RF) - V1 (Binary)** | **513.21%** | **11.38%** | 10.40% | **1.094** | **-14.54%** |
-| **ML (RF) - V2 (Continuous)** | 344.09% | 9.26% | 8.50% | **1.090** | **-19.02%** |
+| **S&P 500 Buy & Hold** | **821.14%** | **14.18%** | 14.34% | 0.988 | -23.93% |
+| **Benchmark (60/40 SPY/AGG)** | 358.74% | 9.52% | 9.20% | 1.035 | -20.06% |
+| **MRS - V1 (Binary)** | 292.90% | 8.51% | 9.09% | 0.937 | -21.12% |
+| **MRS - V2 (Continuous)** | 296.46% | 8.57% | **8.44%** | 1.015 | **-18.41%** |
+| **ML (RF) - V1 (Binary)** | **500.11%** | **11.29%** | 10.42% | **1.084** | **-14.54%** |
+| **ML (RF) - V2 (Continuous)** | 336.83% | 9.20% | 8.51% | **1.081** | **-19.02%** |
 
 ### 🔍 Core Takeaways for the Report:
 1. **Drawdown Protection**: The **Machine Learning (Binary)** model delivered a maximum drawdown of just **-14.54%** (compared to -20.06% for the 60/40 benchmark and -23.93% for pure S&P 500 Buy & Hold), cutting peak equity losses by nearly **40%**.
-2. **Sharpe Ratio Leadership**: Both **ML Binary (1.094)** and **ML Continuous (1.090)** outperformed the passive 60/40 benchmark (**1.041**) and Buy & Hold (**0.996**).
+2. **Sharpe Ratio Leadership**: Both **ML Binary (1.084)** and **ML Continuous (1.081)** outperformed the passive 60/40 benchmark (**1.035**) and Buy & Hold (**0.988**).
 3. **Feature Alignment Rationale**: Incorporating aggregate bond momentum (`AGG_3M_Ret`, `AGG_12M_Ret`) provided the Random Forest with clean credit spread and duration signals, avoiding the catastrophic duration losses of long-term Treasuries during the 2022 rate hike cycle.
+
+---
+
+## 🔬 Exploratory Data Analysis (EDA) Highlights
+
+Following the FDA course rubric's **Question $\to$ Evidence $\to$ Observation $\to$ Financial Interpretation** framework, we investigated the underlying macroeconomic and market dynamics:
+
+| Investigation 1: Asymmetric Tail Risk & Drawdowns | Investigation 2: Yield Curve & Unemployment Signals |
+| :---: | :---: |
+| ![EDA Inv 1](plots_eda/eda_inv1_drawdown_breakdown.png) | ![EDA Inv 2](plots_eda/eda_inv2_macro_signals.png) |
+| **Investigation 3: Return Distribution & Volatility Clustering** | **Investigation 4: Feature Correlation Heatmap** |
+| ![EDA Inv 3](plots_eda/eda_inv3_volatility_clustering.png) | ![EDA Inv 4](plots_eda/eda_feature_correlation_matrix.png) |
 
 ---
 
@@ -67,6 +79,7 @@ All backtests incorporate **Total-Return dividend and coupon reinvestment (`auto
 ├── README.md                              # Comprehensive project documentation
 ├── requirements.txt                       # Python dependencies
 ├── .gitignore                             # Git ignore rules
+├── eda_analysis.py                        # Standalone script generating all EDA figures
 ├── main.py                                # Orchestrator for Version 1 (Binary Allocation)
 ├── main_continuous.py                     # Orchestrator for Version 2 (Continuous Blending)
 ├── performance_metrics.csv                # Metrics export for V1
@@ -79,6 +92,11 @@ All backtests incorporate **Total-Return dividend and coupon reinvestment (`auto
 │   └── visualizer.py                      # Publication-ready plotting utilities
 ├── notebooks/
 │   └── regime_analysis.ipynb              # Interactive walkthrough Jupyter notebook
+├── plots_eda/                             # Dedicated Exploratory Data Analysis figures
+│   ├── eda_inv1_drawdown_breakdown.png
+│   ├── eda_inv2_macro_signals.png
+│   ├── eda_inv3_volatility_clustering.png
+│   └── eda_feature_correlation_matrix.png
 ├── plots/                                 # Visualizations for Version 1 (Binary)
 │   ├── performance_comparison.png
 │   ├── drawdown_comparison.png
