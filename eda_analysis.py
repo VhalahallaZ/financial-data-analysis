@@ -131,11 +131,20 @@ def run_eda():
     ax_dist.set_ylabel("Density")
     ax_dist.legend(frameon=True, facecolor='#ffffff')
     
-    # 3B: Time series of 3-Month Realized Volatility with shaded crisis periods
+    # 3B: Time series of 3-Month Realized Volatility with SPY price on twin axis
     vol_series = df['SPY_Vol_3M'] * 100
-    ax_vol.plot(df.index, vol_series, color='#0d6efd', linewidth=1.5, label='3M Realized Volatility (%)')
-    ax_vol.axhline(20, color='#dc3545', linestyle='--', linewidth=1.2, label='High-Vol Stress Threshold (20%)')
-    ax_vol.fill_between(df.index, vol_series, 20, where=(vol_series > 20), color='#dc3545', alpha=0.25, label='High-Vol Regime (> 20%)')
+    ax_vol.plot(df.index, vol_series, color='#dc3545', linewidth=1.5, label='3M Realized Volatility (%)')
+    ax_vol.axhline(20, color='#dc3545', linestyle='--', linewidth=1.0, alpha=0.8, label='High-Vol Threshold (20%)')
+    ax_vol.fill_between(df.index, vol_series, 20, where=(vol_series > 20), color='#dc3545', alpha=0.22, label='High-Vol Regime (> 20%)')
+    ax_vol.set_ylabel("Annualized Volatility (%)", color='#dc3545', fontsize=10)
+    ax_vol.tick_params(axis='y', labelcolor='#dc3545')
+    ax_vol.set_ylim(0, 85)
+    
+    # Twin axis for SPY price
+    ax_vol_twin = ax_vol.twinx()
+    ax_vol_twin.plot(df.index, df['SPY'], color='#212529', linewidth=1.5, label='S&P 500 (SPY) Price')
+    ax_vol_twin.set_ylabel("SPY Price ($)", color='#212529', fontsize=10)
+    ax_vol_twin.tick_params(axis='y', labelcolor='#212529')
     
     # Shading 4 major crises matching Investigations 1 & 2
     ax_vol.axvspan(pd.to_datetime('2000-03-01'), pd.to_datetime('2002-10-01'), color='#6f42c1', alpha=0.12, label='2000-02 Dot-Com Crash')
@@ -143,11 +152,13 @@ def run_eda():
     ax_vol.axvspan(pd.to_datetime('2020-02-01'), pd.to_datetime('2020-04-01'), color='#fd7e14', alpha=0.12, label='2020 COVID-19 Shock')
     ax_vol.axvspan(pd.to_datetime('2022-01-01'), pd.to_datetime('2022-10-01'), color='#ffc107', alpha=0.12, label='2022 Inflation Cycle')
     
-    ax_vol.set_title("Investigation 3B: Volatility Clustering & Regime Shifts", fontsize=11, fontweight='bold')
+    ax_vol.set_title("Investigation 3B: Volatility Explosions & Market Drawdowns", fontsize=11, fontweight='bold')
     ax_vol.set_xlabel("Date")
-    ax_vol.set_ylabel("Annualized Volatility (%)")
-    ax_vol.set_ylim(0, 80)
-    ax_vol.legend(loc='upper right', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=8, ncol=2)
+    
+    # Combined legend
+    lines_v1, labels_v1 = ax_vol.get_legend_handles_labels()
+    lines_v2, labels_v2 = ax_vol_twin.get_legend_handles_labels()
+    ax_vol.legend(lines_v1 + lines_v2, labels_v1 + labels_v2, loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=7.5, ncol=2)
     
     plt.tight_layout()
     plt.savefig('plots_eda/eda_inv3_volatility_clustering.png', dpi=300)
