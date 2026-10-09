@@ -26,29 +26,38 @@ def run_eda():
     # Investigation 1: Diversification Breakdown & Drawdown Asymmetry
     # -------------------------------------------------------------
     print("Generating Investigation 1 plot: Drawdown trajectories...")
-    spy_cum = (1 + df['SPY'].pct_change().fillna(0)).cumprod()
-    agg_cum = (1 + df['AGG'].pct_change().fillna(0)).cumprod()
+    spy_ret = df['SPY'].pct_change().fillna(0)
+    agg_ret = df['AGG'].pct_change().fillna(0)
+    port6040_ret = 0.60 * spy_ret + 0.40 * agg_ret
+    
+    spy_cum = (1 + spy_ret).cumprod()
+    agg_cum = (1 + agg_ret).cumprod()
+    port6040_cum = (1 + port6040_ret).cumprod()
     
     spy_dd = (spy_cum - spy_cum.cummax()) / spy_cum.cummax() * 100
     agg_dd = (agg_cum - agg_cum.cummax()) / agg_cum.cummax() * 100
+    port6040_dd = (port6040_cum - port6040_cum.cummax()) / port6040_cum.cummax() * 100
     
-    fig, ax = plt.subplots(figsize=(12, 5))
-    ax.fill_between(df.index, spy_dd, 0, color='#dc3545', alpha=0.3, label='S&P 500 (SPY) Drawdown')
-    ax.plot(df.index, spy_dd, color='#dc3545', linewidth=1.5)
+    fig, ax = plt.subplots(figsize=(12, 5.5))
+    ax.plot(df.index, spy_dd, color='#dc3545', linewidth=1.5, label='S&P 500 (SPY) Drawdown')
+    ax.fill_between(df.index, spy_dd, 0, color='#dc3545', alpha=0.18)
     
-    ax.fill_between(df.index, agg_dd, 0, color='#0d6efd', alpha=0.3, label='Core Aggregate Bonds (AGG) Drawdown')
-    ax.plot(df.index, agg_dd, color='#0d6efd', linewidth=1.5)
+    ax.plot(df.index, port6040_dd, color='#212529', linewidth=1.4, linestyle='--', label='Static 60/40 Portfolio Drawdown')
     
-    # Highlight crises
-    ax.axvspan(pd.to_datetime('2007-10-01'), pd.to_datetime('2009-03-01'), color='#6c757d', alpha=0.15, label='2008 Financial Crisis')
-    ax.axvspan(pd.to_datetime('2020-02-01'), pd.to_datetime('2020-04-01'), color='#fd7e14', alpha=0.15, label='2020 COVID Shock')
-    ax.axvspan(pd.to_datetime('2022-01-01'), pd.to_datetime('2022-10-01'), color='#ffc107', alpha=0.15, label='2022 Rate Hike Cycle')
+    ax.plot(df.index, agg_dd, color='#0d6efd', linewidth=1.2, label='Core Aggregate Bonds (AGG) Drawdown')
+    ax.fill_between(df.index, agg_dd, 0, color='#0d6efd', alpha=0.15)
     
-    ax.set_title("Investigation 1: Asymmetric Tail Risk & Historical Peak-to-Trough Drawdowns", fontsize=13, fontweight='bold', pad=12)
+    # Shading 4 major crises
+    ax.axvspan(pd.to_datetime('2000-03-01'), pd.to_datetime('2002-10-01'), color='#6f42c1', alpha=0.15, label='2000-02 Dot-Com Crash')
+    ax.axvspan(pd.to_datetime('2007-10-01'), pd.to_datetime('2009-03-01'), color='#6c757d', alpha=0.15, label='2007-09 Global Financial Crisis')
+    ax.axvspan(pd.to_datetime('2020-02-01'), pd.to_datetime('2020-04-01'), color='#fd7e14', alpha=0.15, label='2020 COVID-19 Shock')
+    ax.axvspan(pd.to_datetime('2022-01-01'), pd.to_datetime('2022-10-01'), color='#ffc107', alpha=0.15, label='2022 Inflation & Rate Hike Cycle')
+    
+    ax.set_title("Investigation 1: Diversification Breakdown & Historical Peak-to-Trough Drawdowns", fontsize=13, fontweight='bold', pad=12)
     ax.set_ylabel("Drawdown (%)", fontsize=11)
     ax.set_xlabel("Date", fontsize=11)
-    ax.set_ylim(-55, 5)
-    ax.legend(loc='lower left', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6')
+    ax.set_ylim(-58, 6)
+    ax.legend(loc='lower right', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=9, ncol=2)
     plt.tight_layout()
     plt.savefig('plots_eda/eda_inv1_drawdown_breakdown.png', dpi=300)
     plt.close()
@@ -82,11 +91,18 @@ def run_eda():
     ax2.set_ylim(-1.5, 4.0)
     ax2.set_title("Investigation 2B: Labor Market Deterioration & Macro Stress", fontsize=12, fontweight='bold')
     
+    # Shading 4 major crises matching Investigation 1
+    for ax in [ax1, ax2]:
+        ax.axvspan(pd.to_datetime('2000-03-01'), pd.to_datetime('2002-10-01'), color='#6f42c1', alpha=0.12, label='2000-02 Dot-Com Crash' if ax == ax1 else None)
+        ax.axvspan(pd.to_datetime('2007-10-01'), pd.to_datetime('2009-03-01'), color='#6c757d', alpha=0.12, label='2007-09 Global Financial Crisis' if ax == ax1 else None)
+        ax.axvspan(pd.to_datetime('2020-02-01'), pd.to_datetime('2020-04-01'), color='#fd7e14', alpha=0.12, label='2020 COVID-19 Shock' if ax == ax1 else None)
+        ax.axvspan(pd.to_datetime('2022-01-01'), pd.to_datetime('2022-10-01'), color='#ffc107', alpha=0.12, label='2022 Inflation Cycle' if ax == ax1 else None)
+    
     # Legends
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax1_twin.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=True, facecolor='#ffffff')
-    ax2.legend(loc='upper left', frameon=True, facecolor='#ffffff')
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=8, ncol=2)
+    ax2.legend(loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=8.5)
     
     plt.tight_layout()
     plt.savefig('plots_eda/eda_inv2_macro_signals.png', dpi=300)
