@@ -131,15 +131,23 @@ def run_eda():
     ax_dist.set_ylabel("Density")
     ax_dist.legend(frameon=True, facecolor='#ffffff')
     
-    # 3B: Scatter of Monthly Return vs 3-Month Realized Volatility
-    ax_vol.scatter(valid_data['vol'], valid_data['ret'], color='#198754', alpha=0.6, edgecolors='none', s=35)
-    sns.regplot(x=valid_data['vol'], y=valid_data['ret'], ax=ax_vol, color='#dc3545', scatter=False, line_kws={'linewidth': 1.5})
-    ax_vol.axhline(0, color='#6c757d', linestyle='--', linewidth=0.8)
-    ax_vol.axvline(20, color='#ffc107', linestyle=':', linewidth=1.2, label='High-Vol Regime Threshold (20%)')
-    ax_vol.set_title("Investigation 3B: Realized Volatility vs. Return Asymmetry", fontsize=11, fontweight='bold')
-    ax_vol.set_xlabel("3-Month Annualized Realized Volatility (%)")
-    ax_vol.set_ylabel("Monthly S&P 500 Return (%)")
-    ax_vol.legend(frameon=True, facecolor='#ffffff')
+    # 3B: Time series of 3-Month Realized Volatility with shaded crisis periods
+    vol_series = df['SPY_Vol_3M'] * 100
+    ax_vol.plot(df.index, vol_series, color='#0d6efd', linewidth=1.5, label='3M Realized Volatility (%)')
+    ax_vol.axhline(20, color='#dc3545', linestyle='--', linewidth=1.2, label='High-Vol Stress Threshold (20%)')
+    ax_vol.fill_between(df.index, vol_series, 20, where=(vol_series > 20), color='#dc3545', alpha=0.25, label='High-Vol Regime (> 20%)')
+    
+    # Shading 4 major crises matching Investigations 1 & 2
+    ax_vol.axvspan(pd.to_datetime('2000-03-01'), pd.to_datetime('2002-10-01'), color='#6f42c1', alpha=0.12, label='2000-02 Dot-Com Crash')
+    ax_vol.axvspan(pd.to_datetime('2007-10-01'), pd.to_datetime('2009-03-01'), color='#6c757d', alpha=0.12, label='2007-09 Global Financial Crisis')
+    ax_vol.axvspan(pd.to_datetime('2020-02-01'), pd.to_datetime('2020-04-01'), color='#fd7e14', alpha=0.12, label='2020 COVID-19 Shock')
+    ax_vol.axvspan(pd.to_datetime('2022-01-01'), pd.to_datetime('2022-10-01'), color='#ffc107', alpha=0.12, label='2022 Inflation Cycle')
+    
+    ax_vol.set_title("Investigation 3B: Volatility Clustering & Regime Shifts", fontsize=11, fontweight='bold')
+    ax_vol.set_xlabel("Date")
+    ax_vol.set_ylabel("Annualized Volatility (%)")
+    ax_vol.set_ylim(0, 80)
+    ax_vol.legend(loc='upper right', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=8, ncol=2)
     
     plt.tight_layout()
     plt.savefig('plots_eda/eda_inv3_volatility_clustering.png', dpi=300)
