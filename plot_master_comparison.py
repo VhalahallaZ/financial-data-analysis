@@ -98,7 +98,33 @@ def main():
     out_path = 'plots/master_cumulative_returns_comparison.png'
     plt.savefig(out_path, dpi=300)
     plt.close()
-    print(f"Master plot saved successfully to {out_path}")
+    print(f"Master returns plot saved successfully to {out_path}")
+    
+    # 7. Plotting Master Underwater Drawdown Comparison Chart
+    fig_dd, ax_dd = plt.subplots(figsize=(13, 6))
+    
+    for col in drawdowns.columns:
+        cfg = styles.get(col, {'color': 'blue', 'linestyle': '-', 'linewidth': 1.5, 'alpha': 1.0})
+        dd_pct = drawdowns[col] * 100
+        min_dd = dd_pct.min()
+        ax_dd.plot(drawdowns.index, dd_pct, label=f"{col} (Max: {min_dd:.2f}%)", **cfg)
+        
+    # Crisis Shading
+    ax_dd.axvspan(pd.to_datetime('2020-02-01'), pd.to_datetime('2020-04-01'), color='#fd7e14', alpha=0.15, label='2020 COVID Shock')
+    ax_dd.axvspan(pd.to_datetime('2022-01-01'), pd.to_datetime('2022-10-01'), color='#ffc107', alpha=0.15, label='2022 Inflation & Rate Hike Cycle')
+    
+    ax_dd.set_title("Master Out-of-Sample Underwater Drawdown Comparison (2010 - 2026)", fontsize=13, fontweight='bold', pad=12)
+    ax_dd.set_ylabel("Drawdown (%)", fontsize=11)
+    ax_dd.set_xlabel("Date", fontsize=11)
+    ax_dd.set_ylim(-27, 2)
+    ax_dd.grid(True, linestyle='--', alpha=0.5)
+    ax_dd.legend(loc='lower left', frameon=True, facecolor='#ffffff', edgecolor='#dee2e6', fontsize=9.0, ncol=2)
+    
+    plt.tight_layout()
+    out_dd_path = 'plots/master_drawdown_comparison.png'
+    plt.savefig(out_dd_path, dpi=300)
+    plt.close()
+    print(f"Master drawdown plot saved successfully to {out_dd_path}")
     
     # 7. Print Final Master Summary Table
     metrics_list = []
