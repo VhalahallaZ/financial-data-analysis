@@ -68,34 +68,48 @@ def run_backtest(df, signal_series, risk_on_asset='SPY', risk_off_asset='TLT',
     portfolio_returns_series = pd.Series(portfolio_returns, index=df.index)
     return portfolio_returns_series, weights
 
-def calculate_metrics(returns_series):
+def calculate_metrics(returns_series, rf=0.0):
     """
-    Computes annualized return, annualized volatility, Sharpe ratio, and Max Drawdown.
+    Computes cumulative return, annualized return, annualized volatility, 
+    Sharpe ratio, Sortino ratio, Max Drawdown, and Calmar ratio.
     Assuming monthly returns data.
     """
-    # Annualized Return
     n_months = len(returns_series)
     cumulative_return = (1 + returns_series).prod() - 1
     annualized_return = (1 + cumulative_return) ** (12 / n_months) - 1
     
-    # Annualized Volatility
+    # Annualized Volatility (Total Standard Deviation)
     annualized_vol = returns_series.std() * np.sqrt(12)
     
-    # Sharpe Ratio (assuming risk free rate = 0)
-    sharpe_ratio = annualized_return / annualized_vol if annualized_vol > 0 else 0
+    # Sharpe Ratio
+    excess_return = annualized_return - rf
+    sharpe_ratio = excess_return / annualized_vol if annualized_vol > 0 else 0
     
-    # Max Drawdown
+    # Sortino Ratio: Downside deviation penalizes only returns below the target/rf
+    # Monthly target return
+    rf_monthly = (1 + rf) ** (1 / 12) - 1
+    downside_returns = returns_series[returns_series < rf_monthly] - rf_monthly
+    # Downside deviation annualized
+    downside_vol = np.sqrt(np.mean(downside_returns**2)) * np.sqrt(12) if len(downside_returns) > 0 else 0
+    sortino_ratio = excess_return / downside_vol if downside_vol > 0 else 0
+    
+    # Max Drawdown & Calmar Ratio
     cum_wealth = (1 + returns_series).cumprod()
     running_max = cum_wealth.cummax()
     drawdowns = (cum_wealth - running_max) / running_max
     max_dd = drawdowns.min()
+    
+    # Calmar Ratio: Annualized Return / |Max Drawdown|
+    calmar_ratio = annualized_return / abs(max_dd) if abs(max_dd) > 0 else 0
     
     return {
         "Cumulative Return": cumulative_return,
         "Annualized Return": annualized_return,
         "Annualized Vol": annualized_vol,
         "Sharpe Ratio": sharpe_ratio,
-        "Max Drawdown": max_dd
+        "Sortino Ratio": sortino_ratio,
+        "Max Drawdown": max_dd,
+        "Calmar Ratio": calmar_ratio
     }
 
 def run_benchmark_60_40(df, risk_on_asset='SPY', risk_off_asset='TLT', transaction_cost=0.001):

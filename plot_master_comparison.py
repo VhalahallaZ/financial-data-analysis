@@ -144,7 +144,9 @@ def main():
     fmt['Annualized Return'] = (fmt['Annualized Return'] * 100).round(2).astype(str) + '%'
     fmt['Annualized Vol'] = (fmt['Annualized Vol'] * 100).round(2).astype(str) + '%'
     fmt['Sharpe Ratio'] = fmt['Sharpe Ratio'].round(3)
+    fmt['Sortino Ratio'] = fmt['Sortino Ratio'].round(3)
     fmt['Max Drawdown'] = (fmt['Max Drawdown'] * 100).round(2).astype(str) + '%'
+    fmt['Calmar Ratio'] = fmt['Calmar Ratio'].round(3)
     print(fmt)
     print("=" * 90 + "\n")
 

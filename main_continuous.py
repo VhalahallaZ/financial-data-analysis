@@ -87,7 +87,9 @@ def main():
     formatted_metrics['Annualized Return'] = (formatted_metrics['Annualized Return'] * 100).round(2).astype(str) + '%'
     formatted_metrics['Annualized Vol'] = (formatted_metrics['Annualized Vol'] * 100).round(2).astype(str) + '%'
     formatted_metrics['Sharpe Ratio'] = formatted_metrics['Sharpe Ratio'].round(3)
+    formatted_metrics['Sortino Ratio'] = formatted_metrics['Sortino Ratio'].round(3)
     formatted_metrics['Max Drawdown'] = (formatted_metrics['Max Drawdown'] * 100).round(2).astype(str) + '%'
+    formatted_metrics['Calmar Ratio'] = formatted_metrics['Calmar Ratio'].round(3)
     print(formatted_metrics)
     print("=" * 80 + "\n")
     
