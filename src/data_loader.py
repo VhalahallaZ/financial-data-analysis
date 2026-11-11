@@ -117,9 +117,20 @@ def prepare_dataset(start_date="2000-01-01", end_date=None):
     mkt_monthly = mkt.resample('ME').last()
     
     # 2. Resample Macro Data to Monthly
-    # Macro data is usually monthly (starts at 1st of month). We align it to end of month.
-    macro_monthly = macro.resample('ME').last()
-    # Forward fill macro data in case of missing values
+    # Macro data from FRED is indexed at the 1st of each reference month.
+    # To strictly eliminate publication lag and look-ahead bias in backtesting:
+    # - Daily financial/market rates (10Y2Y spread, Fed Funds) are known in real time.
+    # - Survey/economic releases (CPI inflation index, Unemployment rate) are released with a 1-2 week lag
+    #   (e.g., September CPI and Unemployment are published mid-October).
+    # Therefore, on Month-End T (e.g. Sep 30), the most recently announced economic data is Month T-1 (August).
+    # We apply a 1-month reporting lag (.shift(1)) to CPI and Unemployment.
+    macro_monthly = macro.resample('ME').last().ffill()
+    if 'CPI_Inflation_Index' in macro_monthly.columns:
+        macro_monthly['CPI_Inflation_Index'] = macro_monthly['CPI_Inflation_Index'].shift(1)
+    if 'Unemployment_Rate' in macro_monthly.columns:
+        macro_monthly['Unemployment_Rate'] = macro_monthly['Unemployment_Rate'].shift(1)
+    
+    # Forward fill any initial shifted gap if needed
     macro_monthly = macro_monthly.ffill()
     
     # Combine datasets
