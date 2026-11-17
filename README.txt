@@ -46,22 +46,57 @@ data yet. To make the model realistic, a 1-month shift (.shift(1)) is applied to
 CPI and Unemployment before running the model.
 
 --------------------------------------------------------------------------------
-3. STEPS TO REPRODUCE ALL ANALYSES
+3. STEPS TO REPRODUCE ALL ANALYSES (METHODOLOGICAL PIPELINE)
 --------------------------------------------------------------------------------
 
 Google Colab Notebook Link:
 https://colab.research.google.com/github/VhalahallaZ/financial-data-analysis/blob/main/notebooks/regime_analysis.ipynb
 
-Steps to Run:
-1. Open the Google Colab link above in your web browser.
-2. In the top navigation menu, click "Runtime" -> "Run all" (or press Ctrl + F9).
-3. The notebook runs automatically from start to finish:
-   - Installs all required Python dependencies.
-   - Downloads and cleans all market and macroeconomic data.
-   - Executes the Exploratory Data Analysis (EDA) and displays all 4 investigation figures.
-   - Fits the Markov Regime Switching and walk-forward Random Forest models.
-   - Runs the backtests with 10 bps transaction fees and monthly asset drift.
-   - Displays the master performance table (returns, volatility, Sharpe, Sortino, Max Drawdown, Calmar).
-   - Generates and plots the master cumulative returns, drawdowns, regime switching probabilities, and Gini feature importance charts.
-   - Displays the latest prediction date, model probabilities, and recommended portfolio weights at the bottom.
+The code executes sequentially through the following 7 methodological steps:
+
+Step 1: Data Ingestion & Proxy Stitching
+- Downloads daily adjusted prices for SPY, AGG, and VBMFX from Yahoo Finance (1998 to 2026).
+- Downloads daily and monthly sovereign series from FRED (T10Y2Y, FEDFUNDS, CPIAUCSL, UNRATE).
+- Stitches AGG prices before its September 2003 inception using VBMFX price ratio scaling.
+
+Step 2: Frequency Alignment & Publication Lag Adjustment
+- Resamples all series to calendar month-end (ME).
+- Applies an explicit 1-month reporting lag (.shift(1)) to CPI and Unemployment to replicate 
+  real-world Bureau of Labor Statistics (BLS) release schedules and eliminate look-ahead bias.
+
+Step 3: Feature Engineering & Target Labeling
+- Computes 13 stationary features:
+  * Equity Momentum: 3M, 6M, and 12M percentage returns of SPY.
+  * Bond Momentum: 3M and 12M percentage returns of AGG.
+  * Market Volatility: Annualized 3-month rolling realized volatility of daily SPY returns.
+  * Macro Cycle: 10Y-2Y yield curve spread, YoY CPI inflation, and Fed Funds rate level.
+  * Macro Momentum: 3-month delta of yield spread, Fed Funds rate, and unemployment rate.
+- Defines ground-truth Risk-Off regime labels: Target = 1 if forward 3-month SPY return 
+  is below -2% OR current trailing drawdown exceeds -10%; else Target = 0.
+
+Step 4: Exploratory Data Analysis (EDA)
+- Evaluates historical drawdown asymmetry across 4 major crises (2000, 2008, 2020, 2022).
+- Tests yield curve inversion and unemployment acceleration as early-warning crisis indicators.
+- Analyzes return skewness, fat tails, volatility clustering, and feature cross-correlations.
+
+Step 5: Regime-Switching Model Fitting & Walk-Forward Inference
+- Model 1 (Markov Regime Switching): Fits a 2-state Hamilton switching regression on 
+  SPY returns and realized volatility to calculate smoothed posterior Risk-Off probabilities.
+- Model 2 (Machine Learning Random Forest): Uses an expanding walk-forward window with 
+  120 months initial training. For each month t from 2010 to 2026, the model trains strictly 
+  on data up to t-1 and predicts the out-of-sample Risk-Off probability for month t.
+
+Step 6: Backtesting Simulation & Friction Accounting
+- Simulates portfolio allocations across 6 strategies: S&P 500 Buy & Hold, Static 60/40, 
+  MRS Binary, MRS Continuous, ML Binary, and ML Continuous.
+- Shifts model weights by 1 month to reflect month-end rebalancing executed for the following month.
+- Deducts an institutional transaction fee of 10 bps (0.10%) per traded portfolio turnover.
+- Simulates intra-month organic asset weight drift prior to month-end rebalancing.
+
+Step 7: Performance Evaluation & Chart Generation
+- Calculates performance metrics: Cumulative Total Return, Annualized Return (CAGR), 
+  Annualized Volatility, Sharpe Ratio (Rf=0%), Sortino Ratio, Maximum Drawdown, and Calmar Ratio.
+- Generates master cumulative wealth curves, underwater drawdown profiles, combined regime 
+  probability trajectories, and mean Gini feature importance rankings.
+- Outputs the latest regime prediction, probabilities, and tactical allocation recommendations.
 ================================================================================
